@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { db, plain } from '../utils/db'
+import { resolveRegisteredIso } from '../utils/iso'
 import type { FilmStock } from '../types/film-stock'
 
 type NewFilm = Omit<FilmStock, 'id' | 'schemaRev'>
@@ -22,11 +23,13 @@ export const useFilmStore = defineStore('film', {
         this.loading = false
       }
     },
-    async addFilm(payload: NewFilm): Promise<number> {
-      const next = { ...payload, schemaRev: 2 }
+    async addFilm(payload: NewFilm): Promise<{ id: number; realIso: number }> {
+      // 实拍 ISO 低于建议值时按建议值入册，更高的自测值保留
+      const realIso = resolveRegisteredIso(payload)
+      const next = { ...payload, realIso, schemaRev: 2 }
       const id = await db.films.add(plain(next))
       await this.load()
-      return id
+      return { id, realIso }
     },
     async changeRolls(id: number, rollsLeft: number): Promise<void> {
       await db.films.update(id, plain({ rollsLeft: Math.max(0, rollsLeft) }))

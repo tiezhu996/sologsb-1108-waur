@@ -8,6 +8,7 @@ import { useDeveloperStore } from '../stores/developerStore'
 import { useFilmStore } from '../stores/filmStore'
 import { useRecipeStore } from '../stores/recipeStore'
 import { useRunStore } from '../stores/runStore'
+import { adviseIso } from '../utils/iso'
 
 const filmStore = useFilmStore()
 const developerStore = useDeveloperStore()
@@ -28,6 +29,11 @@ const curvePoints = computed(() => {
 
 function filmName(id: number): string {
   return filmStore.films.find((film) => film.id === id)?.model ?? '未知胶片'
+}
+
+function adviceIso(id: number): number | null {
+  const film = filmStore.films.find((item) => item.id === id)
+  return film ? adviseIso(film).iso : null
 }
 
 function developerName(id: number): string {
@@ -113,6 +119,7 @@ onMounted(async () => {
             <thead>
               <tr>
                 <th>胶片</th>
+                <th>建议实拍 ISO</th>
                 <th>显影液</th>
                 <th>稀释</th>
                 <th>温度</th>
@@ -125,6 +132,9 @@ onMounted(async () => {
                 <td>
                   <strong>{{ filmName(recipe.filmId) }}</strong>
                   <small>配方 #{{ recipe.id }}</small>
+                </td>
+                <td data-testid="cell-lookup-iso">
+                  {{ adviceIso(recipe.filmId) === null ? '—' : `ISO ${adviceIso(recipe.filmId)}` }}
                 </td>
                 <td>{{ developerName(recipe.developerId) }}</td>
                 <td>{{ recipe.dilution }}</td>

@@ -14,7 +14,8 @@ const filmSeeds: FilmStock[] = [
   { id: 3, model: 'Portra', format: '120', boxIso: 400, realIso: 320, emulsionNo: 'PC400-147-02', expireDate: '2027-03-18', rollsLeft: 5, schemaRev: 2 },
   { id: 4, model: 'GP3', format: '120', boxIso: 100, realIso: 100, emulsionNo: 'GP3-2404-C08', expireDate: '2026-10-12', rollsLeft: 2, schemaRev: 2 },
   { id: 5, model: 'HP5', format: '4×5', boxIso: 400, realIso: 400, emulsionNo: 'HP5-45-24C', expireDate: '2027-01-20', rollsLeft: 8, schemaRev: 2 },
-  { id: 6, model: 'Portra', format: '135', boxIso: 400, realIso: 400, emulsionNo: 'PC400-132-01', expireDate: '2025-12-31', rollsLeft: 0, schemaRev: 2 }
+  { id: 6, model: 'Portra', format: '135', boxIso: 400, realIso: 400, emulsionNo: 'PC400-132-01', expireDate: '2025-12-31', rollsLeft: 0, schemaRev: 2 },
+  { id: 7, model: 'GP3', format: '135', boxIso: 100, realIso: 100, emulsionNo: 'GP3-2309-D22', expireDate: '2024-09-15', rollsLeft: 4, schemaRev: 2 }
 ]
 
 const developerSeeds: Developer[] = [

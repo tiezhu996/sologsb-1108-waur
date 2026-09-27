@@ -775,6 +775,23 @@ td em {
   color: var(--danger) !important;
 }
 
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+
+.field-hint--warn {
+  color: var(--danger);
+}
+
+.iso-drop {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
 .developer-card {
   min-height: 235px;
 }

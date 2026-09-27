@@ -5,7 +5,8 @@ import { useRoute } from 'vue-router'
 import EmptyPanel from '../components/common/EmptyPanel.vue'
 import FilterBar from '../components/common/FilterBar.vue'
 import { useFilmStore } from '../stores/filmStore'
-import type { FilmFormat, FilmModel } from '../types/film-stock'
+import { adviseIso, resolveRegisteredIso } from '../utils/iso'
+import type { FilmFormat, FilmModel, FilmStock } from '../types/film-stock'
 
 interface FilterValue {
   keyword: string
@@ -92,6 +93,13 @@ function stockStatus(film: { rollsLeft: number; expireDate: string }): { label: 
   return expiryState(film.expireDate)
 }
 
+const formAdvice = computed(() => adviseIso({ boxIso: form.boxIso, realIso: form.boxIso, expireDate: form.expireDate }))
+const formWillClamp = computed(() => Number(form.realIso) > 0 && form.realIso < formAdvice.value.iso)
+
+function filmAdvice(film: FilmStock) {
+  return adviseIso(film)
+}
+
 async function submitFilm(): Promise<void> {
   const models: FilmModel[] = ['GP3', 'HP5', 'Portra']
   const formats: FilmFormat[] = ['135', '120', '4×5']
@@ -105,8 +113,12 @@ async function submitFilm(): Promise<void> {
   }
   saving.value = true
   try {
-    await filmStore.addFilm({ ...form, emulsionNo: form.emulsionNo.trim() })
-    ElMessage.success('胶片批次已入册')
+    const { realIso } = await filmStore.addFilm({ ...form, emulsionNo: form.emulsionNo.trim() })
+    if (realIso !== form.realIso) {
+      ElMessage.success(`胶片批次已入册，实拍 ISO 低于建议值，已按建议值 ${realIso} 入册`)
+    } else {
+      ElMessage.success('胶片批次已入册')
+    }
     form.emulsionNo = ''
     form.rollsLeft = 1
     showForm.value = false
@@ -172,6 +184,12 @@ onMounted(() => {
         <label>
           <span>实拍 ISO</span>
           <input v-model.number="form.realIso" data-testid="field-realIso" type="number" min="25" max="3200" />
+          <small v-if="formWillClamp" class="field-hint field-hint--warn" data-testid="hint-iso-clamp">
+            低于建议值 ISO {{ formAdvice.iso }}，保存时将按建议值入册
+          </small>
+          <small v-else-if="formAdvice.adjusted" class="field-hint">
+            该有效期建议实拍 ISO {{ formAdvice.iso }}（降 {{ formAdvice.stopsLabel }} 档{{ formAdvice.atFloor ? '，已到下限' : '' }}）
+          </small>
         </label>
         <label class="span-2">
           <span>乳剂批号</span>
@@ -215,6 +233,15 @@ onMounted(() => {
           <dl class="data-pairs">
             <div><dt>乳剂批号</dt><dd>{{ film.emulsionNo }}</dd></div>
             <div><dt>标称 / 实拍</dt><dd>ISO {{ film.boxIso }} / {{ film.realIso }}</dd></div>
+            <div>
+              <dt>建议实拍 ISO</dt>
+              <dd data-testid="cell-advice-iso">
+                ISO {{ filmAdvice(film).iso }}
+                <small v-if="filmAdvice(film).adjusted" class="iso-drop">
+                  （降 {{ filmAdvice(film).stopsLabel }} 档{{ filmAdvice(film).atFloor ? '，下限' : '' }}）
+                </small>
+              </dd>
+            </div>
             <div><dt>有效期</dt><dd>{{ film.expireDate }}</dd></div>
             <div><dt>余量</dt><dd :class="{ 'text-danger': film.rollsLeft <= 2 }">{{ film.rollsLeft }} 卷</dd></div>
           </dl>
