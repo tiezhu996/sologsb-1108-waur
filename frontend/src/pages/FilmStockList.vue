@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import EmptyPanel from '../components/common/EmptyPanel.vue'
 import FilterBar from '../components/common/FilterBar.vue'
 import { useFilmStore } from '../stores/filmStore'
+import { suggestedRealIso } from '../utils/film-iso'
 import type { FilmFormat, FilmModel } from '../types/film-stock'
 
 interface FilterValue {
@@ -105,8 +106,14 @@ async function submitFilm(): Promise<void> {
   }
   saving.value = true
   try {
-    await filmStore.addFilm({ ...form, emulsionNo: form.emulsionNo.trim() })
-    ElMessage.success('胶片批次已入册')
+    const suggested = suggestedRealIso(form)
+    const realIso = Math.max(form.realIso, suggested)
+    await filmStore.addFilm({ ...form, realIso, emulsionNo: form.emulsionNo.trim() })
+    if (realIso > form.realIso) {
+      ElMessage.info(`实拍 ISO 低于建议值，已按建议 ISO ${realIso} 入册`)
+    } else {
+      ElMessage.success('胶片批次已入册')
+    }
     form.emulsionNo = ''
     form.rollsLeft = 1
     showForm.value = false
@@ -215,6 +222,7 @@ onMounted(() => {
           <dl class="data-pairs">
             <div><dt>乳剂批号</dt><dd>{{ film.emulsionNo }}</dd></div>
             <div><dt>标称 / 实拍</dt><dd>ISO {{ film.boxIso }} / {{ film.realIso }}</dd></div>
+            <div><dt>建议实拍</dt><dd>ISO {{ suggestedRealIso(film) }}</dd></div>
             <div><dt>有效期</dt><dd>{{ film.expireDate }}</dd></div>
             <div><dt>余量</dt><dd :class="{ 'text-danger': film.rollsLeft <= 2 }">{{ film.rollsLeft }} 卷</dd></div>
           </dl>

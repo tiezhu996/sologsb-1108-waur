@@ -8,6 +8,7 @@ import { useDeveloperStore } from '../stores/developerStore'
 import { useFilmStore } from '../stores/filmStore'
 import { useRecipeStore } from '../stores/recipeStore'
 import { useRunStore } from '../stores/runStore'
+import { suggestedRealIso } from '../utils/film-iso'
 
 const filmStore = useFilmStore()
 const developerStore = useDeveloperStore()
@@ -84,7 +85,7 @@ onMounted(async () => {
             <select v-model="filmId">
               <option value="all">全部胶片</option>
               <option v-for="film in filmStore.films" :key="film.id" :value="film.id">
-                {{ film.model }} · {{ film.format }} · {{ film.emulsionNo }}
+                {{ film.model }} · {{ film.format }} · {{ film.emulsionNo }} · 建议 ISO {{ suggestedRealIso(film) }}
               </option>
             </select>
           </label>
